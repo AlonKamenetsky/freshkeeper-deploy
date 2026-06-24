@@ -1,0 +1,13 @@
+.suggest-box { margin-bottom: 24px; }
+.suggest-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.suggest-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 12px; }
+.suggest-form { display: flex; gap: 10px; }
+
+.suggest-results { margin-top: 16px; border-top: 1px solid var(--gray-200); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.suggest-none { font-size: 14px; color: var(--gray-500); }
+.suggest-result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--gray-50); border-radius: var(--radius-sm); }
+.suggest-result-info { display: flex; flex-direction: column; gap: 2px; }
+.suggest-result-name { font-weight: 500; font-size: 14px; }
+.suggest-result-meta { font-size: 12px; color: var(--gray-500); }
+
+.recipes-filter { margin-bottom: 16px; }

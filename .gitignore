@@ -1,0 +1,16 @@
+.DS_Store
+*/.DS_Store
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+*.env
+
+# Build/cache files
+.cache/
+**/.cache/
+dist/
+build/

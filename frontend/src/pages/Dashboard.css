@@ -1,0 +1,39 @@
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  text-align: center;
+}
+.stat-number { font-size: 32px; font-weight: 600; color: var(--green-600); line-height: 1; }
+.stat-number.stat-urgent { color: var(--red-400); }
+.stat-label  { font-size: 13px; color: var(--gray-500); margin-top: 6px; }
+
+.dashboard-section { margin-bottom: 36px; }
+.section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--gray-900); }
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.recipes-list { display: flex; flex-direction: column; gap: 10px; }
+.recipe-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+}
+.recipe-row-info { display: flex; flex-direction: column; gap: 2px; }
+.recipe-row-name { font-weight: 500; font-size: 14px; }
+.recipe-row-meta { font-size: 12px; color: var(--gray-500); }
+.recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; }
