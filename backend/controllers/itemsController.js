@@ -18,7 +18,6 @@ async function getAllItems(req, res) {
       where.expirationDate = { [Op.lte]: cutoff };
     }
     const userId = req.headers['x-user-id'];
-    const userRole = req.headers['x-user-role'];
     if (userId) {
       where.userId = parseInt(userId);
     }
@@ -62,9 +61,8 @@ async function createItem(req, res) {
     return errorResponse(res, 400, 'VALIDATION_ERROR', `Invalid category. Allowed: ${VALID_CATS.join(', ')}.`, {});
   try {
     const item = await Item.create({ name, quantity, unit, expirationDate, storageType, category, userId });
-    // emit websocket event (injected via req.app)
     const io = req.app.get('io');
-    if (io) io.emit('item:created', { itemId: item.itemId, name: item.name, category: item.category, storageType: item.storageType });
+    if (io && userId) io.to(`user_${userId}`).emit('item:created', { itemId: item.itemId, name: item.name, category: item.category, storageType: item.storageType });
     return successResponse(res, { itemId: item.itemId }, 201);
   } catch (err) {
     return errorResponse(res, 500, 'DB_ERROR', err.message, {});
@@ -76,6 +74,8 @@ async function updateItem(req, res) {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return errorResponse(res, 400, 'VALIDATION_ERROR', 'Invalid item ID.', {});
   const { name, quantity, unit, expirationDate, storageType, category } = req.body;
+  const requestingUserId = req.headers['x-user-id'] ? parseInt(req.headers['x-user-id']) : null;
+  const userRole = req.headers['x-user-role'];
   if (quantity !== undefined && (typeof quantity !== 'number' || quantity < 0))
     return errorResponse(res, 400, 'VALIDATION_ERROR', 'quantity must be a non-negative number.', {});
   if (storageType && !VALID_STORAGE.includes(storageType))
@@ -85,9 +85,11 @@ async function updateItem(req, res) {
   try {
     const item = await Item.findByPk(id);
     if (!item) return errorResponse(res, 404, 'NOT_FOUND', `Item ${id} not found.`, {});
+    if (userRole !== 'admin' && item.userId !== requestingUserId)
+      return errorResponse(res, 403, 'FORBIDDEN', 'You can only edit your own items.', {});
     await item.update({ name, quantity, unit, expirationDate, storageType, category });
     const io = req.app.get('io');
-    if (io) io.emit('item:updated', { itemId: item.itemId, name: item.name, quantity: item.quantity });
+    if (io && item.userId) io.to(`user_${item.userId}`).emit('item:updated', { itemId: item.itemId, name: item.name, quantity: item.quantity });
     return successResponse(res, { itemId: item.itemId });
   } catch (err) {
     return errorResponse(res, 500, 'DB_ERROR', err.message, {});
@@ -98,12 +100,16 @@ async function updateItem(req, res) {
 async function deleteItem(req, res) {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return errorResponse(res, 400, 'VALIDATION_ERROR', 'Invalid item ID.', {});
+  const requestingUserId = req.headers['x-user-id'] ? parseInt(req.headers['x-user-id']) : null;
+  const userRole = req.headers['x-user-role'];
   try {
     const item = await Item.findByPk(id);
     if (!item) return errorResponse(res, 404, 'NOT_FOUND', `Item ${id} not found.`, {});
+    if (userRole !== 'admin' && item.userId !== requestingUserId)
+      return errorResponse(res, 403, 'FORBIDDEN', 'You can only delete your own items.', {});
     await item.destroy();
     const io = req.app.get('io');
-    if (io) io.emit('item:deleted', { itemId: id });
+    if (io && item.userId) io.to(`user_${item.userId}`).emit('item:deleted', { itemId: id });
     return successResponse(res, { itemId: id });
   } catch (err) {
     return errorResponse(res, 500, 'DB_ERROR', err.message, {});

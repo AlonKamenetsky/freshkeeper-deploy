@@ -23,6 +23,8 @@ io.on('connection', (socket) => {
 
   socket.on('user_join', ({ userId, email, role }) => {
     onlineUsers.set(socket.id, { userId, email, role });
+    // Join a personal room so item events only go to this user
+    if (userId) socket.join(`user_${userId}`);
     io.emit('online_users', Array.from(onlineUsers.values()));
   });
 
