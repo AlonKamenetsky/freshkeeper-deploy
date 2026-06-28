@@ -20,8 +20,8 @@ export default function Items() {
   const [view, setView]         = useState('cards'); // 'cards' | 'table'
 
   const user = getCurrentUser();
-  const canEdit = user?.role === 'admin' || user?.role === 'employee';
-  const canDelete = user?.role === 'admin';
+  const canEdit = true
+  const canDelete = true
 
   async function load() {
     try {
