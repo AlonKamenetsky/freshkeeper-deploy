@@ -12,11 +12,15 @@ async function getAllItems(req, res) {
     const where = {};
     if (req.query.storageType) where.storageType = req.query.storageType;
     if (req.query.category)    where.category    = req.query.category;
-    if (req.query.userId)      where.userId      = parseInt(req.query.userId);
     if (req.query.expiringSoon === 'true') {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() + 3);
       where.expirationDate = { [Op.lte]: cutoff };
+    }
+    const userId = req.headers['x-user-id'];
+    const userRole = req.headers['x-user-role'];
+    if (userId && userRole !== 'admin') {
+      where.userId = parseInt(userId);
     }
     const items = await Item.findAll({
       where,
