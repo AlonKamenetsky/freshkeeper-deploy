@@ -17,6 +17,5 @@ router.post('/', authorize('admin', 'employee', 'consumer'), itemsController.cre
 router.put("/:id", authorize("admin", "employee", "consumer"), itemsController.updateItem);
 
 // DELETE /items/:id - admin only can delete items
-router.delete("/:id", authorize("admin"), itemsController.deleteItem);
-
+router.delete("/:id", authorize("admin", "employee", "consumer"), itemsController.deleteItem);
 module.exports = router;
