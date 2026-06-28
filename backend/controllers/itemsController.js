@@ -50,7 +50,8 @@ async function getItemById(req, res) {
 
 // POST /items
 async function createItem(req, res) {
-  const { name, quantity, unit, expirationDate, storageType, category, userId } = req.body;
+  const { name, quantity, unit, expirationDate, storageType, category } = req.body;
+  const userId = req.headers['x-user-id'] ? parseInt(req.headers['x-user-id']) : null;
   if (!name || quantity === undefined)
     return errorResponse(res, 400, 'VALIDATION_ERROR', 'name and quantity are required.', {});
   if (typeof quantity !== 'number' || quantity < 0)
