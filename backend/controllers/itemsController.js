@@ -85,8 +85,8 @@ async function updateItem(req, res) {
   try {
     const item = await Item.findByPk(id);
     if (!item) return errorResponse(res, 404, 'NOT_FOUND', `Item ${id} not found.`, {});
-    if (userRole !== 'admin' && item.userId !== requestingUserId)
-      return errorResponse(res, 403, 'FORBIDDEN', 'You can only edit your own items.', {});
+    if (userRole !== 'admin' && item.userId !== null && item.userId !== requestingUserId)
+      return errorResponse(res, 403, 'FORBIDDEN', 'You can only delete your own items.', {});
     await item.update({ name, quantity, unit, expirationDate, storageType, category });
     const io = req.app.get('io');
     if (io && item.userId) io.to(`user_${item.userId}`).emit('item:updated', { itemId: item.itemId, name: item.name, quantity: item.quantity });
@@ -105,7 +105,7 @@ async function deleteItem(req, res) {
   try {
     const item = await Item.findByPk(id);
     if (!item) return errorResponse(res, 404, 'NOT_FOUND', `Item ${id} not found.`, {});
-    if (userRole !== 'admin' && item.userId !== requestingUserId)
+    if (userRole !== 'admin' && item.userId !== null && item.userId !== requestingUserId)
       return errorResponse(res, 403, 'FORBIDDEN', 'You can only delete your own items.', {});
     await item.destroy();
     const io = req.app.get('io');
