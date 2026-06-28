@@ -11,9 +11,8 @@ router.get("/", authorize("admin", "employee", "consumer"), itemsController.getA
 // GET /items/:id - all roles can view a single item
 router.get("/:id", authorize("admin", "employee", "consumer"), itemsController.getItemById);
 
-// POST /items - admin and employee can add items to inventory
-router.post("/", authorize("admin", "employee"), itemsController.createItem);
-
+// POST /items - admin, employee AND consumer can add items
+router.post('/', authorize('admin', 'employee', 'consumer'), itemsController.createItem);
 // PUT /items/:id - admin and employee can update items; consumer can also update (e.g. reduce quantity)
 router.put("/:id", authorize("admin", "employee", "consumer"), itemsController.updateItem);
 

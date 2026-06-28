@@ -19,7 +19,7 @@ async function getAllItems(req, res) {
     }
     const userId = req.headers['x-user-id'];
     const userRole = req.headers['x-user-role'];
-    if (userId && userRole !== 'admin') {
+    if (userId) {
       where.userId = parseInt(userId);
     }
     const items = await Item.findAll({
