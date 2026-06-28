@@ -1,22 +1,23 @@
 // src/pages/Recipes.js
 import React, { useEffect, useState } from 'react';
-import { getRecipes, suggestRecipes, createRecipe, deleteRecipe, getCurrentUser } from '../services/api';
+import { getRecipes, getRecipeById, suggestRecipes, createRecipe, deleteRecipe, getCurrentUser } from '../services/api';
 import DataTable from '../components/DataTable';
 import './Recipes.css';
 
 const EMPTY_FORM = { name: '', prepTime: '', cookTime: '', servings: '', tags: '', ingredients: '', instructions: '' };
 
 export default function Recipes() {
-  const [recipes, setRecipes]             = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState('');
-  const [tagFilter, setTagFilter]         = useState('');
-  const [suggestions, setSuggestions]     = useState(null);
-  const [suggestInput, setSuggestInput]   = useState('');
+  const [recipes, setRecipes]               = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState('');
+  const [tagFilter, setTagFilter]           = useState('');
+  const [suggestions, setSuggestions]       = useState(null);
+  const [suggestInput, setSuggestInput]     = useState('');
   const [suggestLoading, setSuggestLoading] = useState(false);
-  const [showForm, setShowForm]           = useState(false);
-  const [form, setForm]                   = useState(EMPTY_FORM);
-  const [saving, setSaving]               = useState(false);
+  const [showForm, setShowForm]             = useState(false);
+  const [form, setForm]                     = useState(EMPTY_FORM);
+  const [saving, setSaving]                 = useState(false);
+  const [selected, setSelected]             = useState(null); // recipe detail modal
 
   const user = getCurrentUser();
   const isAdmin = user?.role === 'admin';
@@ -31,6 +32,13 @@ export default function Recipes() {
   }
 
   useEffect(() => { load(); }, [tagFilter]);
+
+  async function handleRowClick(recipe) {
+    try {
+      const data = await getRecipeById(recipe.recipeId);
+      setSelected(data);
+    } catch (err) { setError(err.message); }
+  }
 
   async function handleSuggest(e) {
     e.preventDefault();
@@ -74,11 +82,11 @@ export default function Recipes() {
   }
 
   const columns = [
-    { key: 'name',     label: 'Recipe' },
-    { key: 'prepTime', label: 'Prep', render: v => `${v} min` },
-    { key: 'cookTime', label: 'Cook', render: v => `${v} min` },
-    { key: 'servings', label: 'Servings' },
-    { key: 'tags',     label: 'Tags', render: tags => (
+    { key: 'name',        label: 'Recipe' },
+    { key: 'prepTime',    label: 'Prep',      render: v => `${v} min` },
+    { key: 'cookTime',    label: 'Cook',      render: v => `${v} min` },
+    { key: 'servings',    label: 'Servings' },
+    { key: 'tags',        label: 'Tags',      render: tags => (
           <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
             {tags?.map(t => <span key={t} className="badge badge-green">{t}</span>)}
           </div>
@@ -87,7 +95,8 @@ export default function Recipes() {
     ...(isAdmin ? [{
       key: 'recipeId', label: 'Actions',
       render: (id) => (
-          <button className="btn btn-danger" style={{fontSize:12,padding:'4px 10px'}} onClick={() => handleDelete(id)}>
+          <button className="btn btn-danger" style={{fontSize:12,padding:'4px 10px'}}
+                  onClick={e => { e.stopPropagation(); handleDelete(id); }}>
             Delete
           </button>
       )
@@ -203,7 +212,46 @@ export default function Recipes() {
         </div>
 
         {loading ? <div className="loading-spinner" /> : (
-            <DataTable columns={columns} data={recipes} emptyMessage="No recipes found." />
+            <DataTable
+                columns={columns}
+                data={recipes}
+                emptyMessage="No recipes found."
+                onRowClick={handleRowClick}
+            />
+        )}
+
+        {/* Recipe Detail Modal */}
+        {selected && (
+            <div className="modal-overlay" onClick={() => setSelected(null)}>
+              <div className="modal-card" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2 className="modal-title">{selected.name}</h2>
+                  <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
+                </div>
+                <div className="modal-meta">
+                  <span>⏱ Prep: {selected.prepTime} min</span>
+                  <span>🍳 Cook: {selected.cookTime} min</span>
+                  <span>🍽 Servings: {selected.servings}</span>
+                </div>
+                {selected.tags?.length > 0 && (
+                    <div className="modal-tags">
+                      {selected.tags.map(t => <span key={t} className="badge badge-green">{t}</span>)}
+                    </div>
+                )}
+                <div className="modal-section">
+                  <h4 className="modal-section-title">Ingredients</h4>
+                  <ul className="modal-list">
+                    {selected.ingredients?.map((ing, i) => <li key={i}>{ing}</li>)}
+                  </ul>
+                </div>
+                {selected.instructions && (
+                    <div className="modal-section">
+                      <h4 className="modal-section-title">Instructions</h4>
+                      <p className="modal-instructions">{selected.instructions}</p>
+                    </div>
+                )}
+              </div>
+            </div>
         )}
       </div>
   );
